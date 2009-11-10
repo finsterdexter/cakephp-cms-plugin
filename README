@@ -28,4 +28,4 @@ CREATE TABLE IF NOT EXISTS `contents` (
 2) set up routes
 Router::connect('/contents/*', array('plugin' => 'cms', 'controller' => 'contents', 'action' => 'display'));
 
-3) add tiny_mce to app/webroot/js
+3) move tiny_mce to app/webroot/js
