@@ -1,0 +1,31 @@
+steps for setting this up:
+
+1) add the contents table:
+--
+-- Table structure for table `contents`
+--
+
+CREATE TABLE IF NOT EXISTS `contents` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `parent_id` int(11) NOT NULL,
+  `lft` int(11) NOT NULL,
+  `rght` int(11) NOT NULL,
+  `permalink` varchar(255) NOT NULL,
+  `sort_order` varchar(50) NOT NULL,
+  `controller` varchar(64) NOT NULL default '',
+  `action` varchar(64) NOT NULL default '',
+  `title` varchar(255) NOT NULL default '',
+  `leadin` text NOT NULL,
+  `content` text NOT NULL,
+  `hidden` tinyint(1) NOT NULL default '0',
+  `nl2br` tinyint(1) NOT NULL default '1',
+  `created` datetime default NULL,
+  `modified` datetime default NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ;
+
+
+2) set up routes
+Router::connect('/contents/*', array('plugin' => 'cms', 'controller' => 'contents', 'action' => 'display'));
+
+3) add tiny_mce to app/webroot/js
