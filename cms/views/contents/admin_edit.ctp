@@ -35,7 +35,7 @@ permalinkIt = function(elm) {
 	</fieldset>
 	<div class="input"><input type="submit" name="submit" id="submit" value="Save" class="bttn"></div>
 <?php echo $form->end();?>
-	<a href="/admin/contents/delete/<?= $this->data['Content']['id'] ?>" id="delete_button" onclick="return confirm('Are you sure you want to delete this page?');">Delete</a>
+	<a href="/admin/cms/contents/delete/<?= $this->data['Content']['id'] ?>" id="delete_button" onclick="return confirm('Are you sure you want to delete this page?');">Delete</a>
 </div>
 
 </div>

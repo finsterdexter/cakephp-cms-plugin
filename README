@@ -29,3 +29,5 @@ CREATE TABLE IF NOT EXISTS `contents` (
 Router::connect('/contents/*', array('plugin' => 'cms', 'controller' => 'contents', 'action' => 'display'));
 
 3) move tiny_mce to app/webroot/js
+
+You can also define MAX_DEPTH somewhere [like define('MAX_DEPTH', 4);] and that will control how man layers of subpages can be created. MAX_DEPTH of 1 will mean no subpages. Currently, this is in cms_app_controller.php but it could be just about anywhere, like core.php, for example, if you want to consolidate your configuration a little.
