@@ -34,6 +34,10 @@ class ContentsController extends CmsAppController {
 		return $content;
 	}
 	
+	function getContentByPermalink($permalink) {
+		return $this->_getContentFromPath(array($permalink));
+	}
+	
 	function display() {
 		$this->layout = 'default';
 		$content = $this->_getContentFromPath(func_get_args());
