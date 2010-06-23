@@ -1,7 +1,9 @@
-<?php echo $javascript->link('prototype-1.6.0.3',false); ?>
-<?php $this->element('yui_editor'); ?>
+<?php // echo $javascript->link('prototype-1.6.0.3',false); ?>
 
 <div id="main-content" class="clearfix sub yui-skin-sam">
+	
+	<?php echo $this->element('yui_editor'); ?>
+	
 <div class="inner admin">
 <h2>Content Management</h2>
 <div class="contents form">
@@ -19,11 +21,11 @@
 
 <script type="text/javascript" charset="utf-8">
 //<![CDATA[
-permalinkIt = function(elm) {
-	var val = elm.value;
-	val = val.replace(/--/ig,'').replace(/[^A-Z0-9]/ig,'-').replace(/--/ig,'-').toLowerCase();
-	$('ContentPermalink').value = val;
-}
+// permalinkIt = function(elm) {
+// 	var val = elm.value;
+// 	val = val.replace(/--/ig,'').replace(/[^A-Z0-9]/ig,'-').replace(/--/ig,'-').toLowerCase();
+// 	$('ContentPermalink').value = val;
+// }
 //]]>
 </script>
 
@@ -34,7 +36,7 @@ permalinkIt = function(elm) {
 		// echo $form->input('nl2br');
 	?>
 	</fieldset>
-	<div class="input"><input type="submit" name="submit" id="submit" value="Save" class="bttn"></div>
+	<div class="input"><input type="submit" name="save" id="save" value="Save" class="bttn"></div>
 <?php echo $form->end();?>
 	<a href="/admin/cms/contents/delete/<?= $this->data['Content']['id'] ?>" id="delete_button" onclick="return confirm('Are you sure you want to delete this page?');">Delete</a>
 </div>

@@ -1,8 +1,8 @@
-<?php echo $javascript->link('prototype-1.6.0.3',false); ?>
+<?php // echo $javascript->link('prototype-1.6.0.3',false); ?>
 
 <div id="main-content" class="clearfix sub yui-skin-sam">
 	
-	<?php $this->element('yui_editor'); ?>
+	<?php echo $this->element('yui_editor'); ?>
 	
 <div class="inner admin">
 <h2>Content Management</h2>
@@ -27,11 +27,11 @@
 	
 <script type="text/javascript" charset="utf-8">
 //<![CDATA[
-permalinkIt = function(elm) {
-	var val = elm.value;
-	val = val.replace(/--/ig,'').replace(/[^A-Z0-9]/ig,'-').replace(/--/ig,'-').toLowerCase();
-	$('ContentPermalink').value = val;
-}
+// permalinkIt = function(elm) {
+// 	var val = elm.value;
+// 	val = val.replace(/--/ig,'').replace(/[^A-Z0-9]/ig,'-').replace(/--/ig,'-').toLowerCase();
+// 	$('ContentPermalink').value = val;
+// }
 //]]>
 </script>
 	
@@ -42,7 +42,7 @@ permalinkIt = function(elm) {
 		// echo $form->input('nl2br');
 	?>
 	</fieldset>
-	<div class="input"><input type="submit" name="submit" id="submit" value="Save" class="bttn"></div>
+	<div class="input"><input type="submit" name="save" id="save" value="Save" class="bttn"></div>
 <?php echo $form->end();?>
 </div>
 </div>

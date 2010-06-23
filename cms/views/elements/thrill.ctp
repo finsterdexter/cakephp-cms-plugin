@@ -1,0 +1,1 @@
+<div class="thrill"><?php echo $message ?></div>

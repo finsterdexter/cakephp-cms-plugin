@@ -3,7 +3,7 @@ class ContentsController extends CmsAppController {
 
 	var $name = 'Contents';
 	var $helpers = array('Html', 'Form', 'Javascript');
-	var $layout = 'admin';
+	var $layout = 'default';
 	var $components = array('Email');
 	var $uses = array('Cms.Contact', 'Cms.Content');
 	
@@ -111,7 +111,7 @@ class ContentsController extends CmsAppController {
 
 	function admin_add() {
 
-		$this->requireAdmin();
+		// $this->requireAdmin();
 		if (!empty($this->data)) {
 			$this->Content->create();
 			if ($this->Content->save($this->data)) {
@@ -140,7 +140,7 @@ class ContentsController extends CmsAppController {
 	}
 
 	function admin_edit($id = null) {
-		$this->requireAdmin();
+		// $this->requireAdmin();
 		
 		// get the nav path
 		$this->set('nav_path', $this->__getPath($id));
@@ -169,7 +169,7 @@ class ContentsController extends CmsAppController {
 	}
 
 	function admin_delete($id = null) {
-		$this->requireAdmin();
+		// $this->requireAdmin();
 		$this->set('admin_css',true);
 		if (!$id) {
 			$this->Session->setFlash(__('Invalid id for Content', true), 'agony');
@@ -178,6 +178,39 @@ class ContentsController extends CmsAppController {
 		if ($this->Content->del($id)) {
 			$this->Session->setFlash(__('Content deleted', true), 'thrill');
 			$this->redirect(array('action'=>'index'));
+		}
+	}
+	
+	function admin_upload_image()
+	{
+		$this->layout = 'ajax';
+		if (isset($_FILES['image']['tmp_name'])) {
+			// open the file
+			$img = $_FILES['image']['tmp_name'];
+			$himage = fopen ( $img, "r"); // read the temporary file into a buffer
+			$image = fread ( $himage, filesize($img) );
+			fclose($himage);
+			//if image can't be opened, either its not a valid format or even an image:
+			if ($image === FALSE) {
+				echo "{status:'Error Reading Uploaded File.'}";
+				return;
+			}
+			// create a new random numeric name to avoid rewriting other images already on the server...
+			$ran = rand ();
+			$ran2 = $ran.".";
+			// define the uploading dir
+			$path = WWW_ROOT . "uploads/";
+			// join path and name
+			$path = $path . $ran2.'jpg';
+			// copy the image to the server, alert on fail
+			$hout=fopen($path,"w");
+			fwrite($hout,$image);
+			fclose($hout);
+			//you'll need to modify the path here to reflect your own server.
+			$path = "/uploads/" . $ran2.'jpg';
+			echo "{status:'UPLOADED', image_url:'$path'}";
+		} else {
+			echo "{status:'No file was submitted'}";
 		}
 	}
 	
