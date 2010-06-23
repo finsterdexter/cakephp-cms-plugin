@@ -1,8 +1,11 @@
 <?php echo $javascript->link('prototype-1.6.0.3',false); ?>
-<div id="main-content" class="clearfix sub">
+
+<div id="main-content" class="clearfix sub yui-skin-sam">
+	
+	<?php $this->element('yui_editor'); ?>
+	
 <div class="inner admin">
 <h2>Content Management</h2>
-<?php echo $this->element('tiny_mce'); ?>
 <div class="contents form">
 <?php echo $this->element('content_selector'); ?>
 
