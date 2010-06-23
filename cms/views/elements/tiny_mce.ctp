@@ -1,5 +1,5 @@
 <?php echo $javascript->link('tiny_mce/tiny_mce', false); ?>
-<?php echo $javascript->link('tiny_mce/plugins/tinybrowser/tb_tinymce.js.php', false); ?>
+<?php echo $javascript->link('tiny_mce/plugins/tinybrowser/tb_tinymce.js.php?', false); ?>
 <script type="text/javascript">
 	tinyMCE.init({
 		// General options
