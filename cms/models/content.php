@@ -36,7 +36,7 @@ class Content extends CmsAppModel
 	);
 	
 	var $actsAs = array(
-		'Content.Sluggable' => array(
+		'Cms.Sluggable' => array(
 			'label' => 'title',
 			'slug' => 'permalink',
 			'overwrite' => false,
