@@ -32,4 +32,10 @@ Router::connect('/contents/*', array('plugin' => 'cms', 'controller' => 'content
 
 4) set up app/webroot/uploads and make it server-writable
 
-You can also define MAX_DEPTH somewhere [like define('MAX_DEPTH', 4);] and that will control how man layers of subpages can be created. MAX_DEPTH of 1 will mean no subpages. Currently, this is in cms_app_controller.php but it could be just about anywhere, like core.php, for example, if you want to consolidate your configuration a little.
+You can also define MAX_DEPTH somewhere [like define('MAX_DEPTH', 4);] and that will control how many layers of subpages can be created. MAX_DEPTH of 1 will mean no subpages. Currently, this is in cms_app_controller.php but it could be just about anywhere, like core.php, for example, if you want to consolidate your configuration a little.
+
+Protip: You can use $this->requestAction() within a view or element to grab content from the plugin without too much hassle. For example:
+
+$content_obj = $this->requestAction(array('plugin' => 'cms', 'controller' => 'contents', 'action' => 'getContentByPermalink'), array('pass' => array('arbitrary-permalink')));
+echo $content_obj['Content']['content'];
+
