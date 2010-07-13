@@ -3,7 +3,7 @@ class ContentsController extends CmsAppController {
 
 	var $name = 'Contents';
 	var $helpers = array('Html', 'Form', 'Javascript');
-	var $layout = 'admin';
+	var $layout = 'default';
 	var $components = array('Email');
 	var $uses = array('Cms.Contact', 'Cms.Content');
 	
@@ -38,8 +38,23 @@ class ContentsController extends CmsAppController {
 		return $this->_getContentFromPath(array($permalink));
 	}
 	
+	function get_permalink_by_id($id = null)
+	{
+		$permalink = $this->Content->field('permalink', array('id' => $id));
+		$this->set('permalink', $permalink);
+		return $permalink;
+	}
+	
+	function id_has_children($id = null)
+	{
+		if ($this->Content->childcount($id))
+			return true;
+		else
+			return false;
+	}
+	
 	function display() {
-		$this->layout = 'default';
+		$this->layout = 'sub';
 		$content = $this->_getContentFromPath(func_get_args());
 		//if (empty($content['Content']['title'])) $content['Content']['title'] = Inflector::humanize($content['Content']['section']);
 		// $this->set('section', $content['Content']['section']);
@@ -48,6 +63,7 @@ class ContentsController extends CmsAppController {
 		$this->set('title_for_view', $content['Content']['title']);
 		$this->set('content', $content['Content']['content']);
 		$this->set('slug', $content['Content']['permalink']);
+		$this->set('id', $content['Content']['id']);
 		
 		if ($content['Content']['parent_id'] == 0)
 		{
@@ -61,6 +77,8 @@ class ContentsController extends CmsAppController {
 			array_unshift($tabs, $parent);
 		}
 		$this->set('tabs', $tabs);
+		$this->set('nav_path', $this->__getPath($content['Content']['id']));
+		
 		
 		// contact form processing
 		if ( isset($this->data['Contact']) )
@@ -68,8 +86,8 @@ class ContentsController extends CmsAppController {
 			$this->Contact->set($this->data);
 			if ($this->Contact->validates())
 			{
-				$this->Email->to = $this->admin_email;
-			    $this->Email->subject = "TshirtAds Contact Us Form";
+				$this->Email->to = "george@electricpulp.com";
+			    $this->Email->subject = "[mrenergy.com] Contact Us Form";
 			    $this->Email->from = $this->data['Contact']['name'] . "<" . $this->data['Contact']['email'] . ">";
 			    $this->Email->template = 'contact'; // note no '.ctp'
 			    // Send as 'html', 'text' or 'both' (default is 'text')
@@ -111,7 +129,7 @@ class ContentsController extends CmsAppController {
 
 	function admin_add() {
 
-		$this->requireAdmin();
+		// $this->requireAdmin();
 		if (!empty($this->data)) {
 			$this->Content->create();
 			if ($this->Content->save($this->data)) {
@@ -125,7 +143,7 @@ class ContentsController extends CmsAppController {
 		if (isset($this->passedArgs['parentid']))
 		{
 			// then generate nav_path for this parent_id, etc.
-			$nav_path = $this->__getPath($this->passedArgs['parentid']);
+			$nav_path = $this->__getPath($this->passedArgs['parentid'], true);
 			$this->set('nav_path', $nav_path);
 			$this->set('nav_id', $this->passedArgs['parentid']);
 			$this->data['Content']['parent_id'] = $this->passedArgs['parentid'];
@@ -140,7 +158,7 @@ class ContentsController extends CmsAppController {
 	}
 
 	function admin_edit($id = null) {
-		$this->requireAdmin();
+		// $this->requireAdmin();
 		
 		// get the nav path
 		$this->set('nav_path', $this->__getPath($id));
@@ -169,26 +187,32 @@ class ContentsController extends CmsAppController {
 	}
 
 	function admin_delete($id = null) {
-		$this->requireAdmin();
+		// $this->requireAdmin();
 		$this->set('admin_css',true);
 		if (!$id) {
 			$this->Session->setFlash(__('Invalid id for Content', true), 'agony');
 			$this->redirect(array('action'=>'index'));
 		}
-		if ($this->Content->del($id)) {
+		if ($this->Content->delete($id)) {
 			$this->Session->setFlash(__('Content deleted', true), 'thrill');
 			$this->redirect(array('action'=>'index'));
 		}
 	}
 	
-	function __getPath($id = null) {
-		$nav_path = $this->Content->getpath($id, array('id','parent_id','title'));
+	function __getPath($id = null, $get_hidden = false) {
+		
+		if ($get_hidden)
+			$hidden = 1;
+		else
+			$hidden = 0;
+		
+		$nav_path = $this->Content->getpath($id, array('id','parent_id','title','permalink'));
 
 		if (is_array($nav_path)): foreach ($nav_path as $index => $nav) // Listen, if $nav_path isn't an array, I don't want to hear it. I'll handle that at the end.
 		{
 			if ($nav['Content']['parent_id'] == '0')
 			{
-				$nav_path[$index]['siblings'] = $this->Content->find('list', array('conditions' => array('parent_id' => 0), 'fields' => array('Content.id', 'Content.title')));
+				$nav_path[$index]['siblings'] = $this->Content->find('list', array('conditions' => array('parent_id' => 0, 'hidden' => 0), 'fields' => array('Content.id', 'Content.title')));
 			}
 			else
 			{
@@ -209,12 +233,17 @@ class ContentsController extends CmsAppController {
 		}
 		else if ($id === 0)
 		{
-			$siblings = $this->Content->find('list', array('fields' => array('Content.id', 'Content.title'), 'conditions' => array('parent_id' => '0')));
+			$siblings = $this->Content->find('list', array('fields' => array('Content.id', 'Content.title'), 'conditions' => array('parent_id' => '0', 'hidden' => $hidden)));
 			$nav_path[] = array('Content' => array('parent_id' => $id), 'siblings' => $siblings);
 		
 		}
 
 		return $nav_path;
+	}
+	
+	function get_path($id = null)
+	{
+		$this->set('nav_path', $this->__getPath($id));
 	}
 	
 }
