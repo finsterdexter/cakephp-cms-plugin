@@ -79,14 +79,13 @@ class ContentsController extends CmsAppController {
 		$this->set('tabs', $tabs);
 		$this->set('nav_path', $this->__getPath($content['Content']['id']));
 		
-		
 		// contact form processing
 		if ( isset($this->data['Contact']) )
 		{
 			$this->Contact->set($this->data);
 			if ($this->Contact->validates())
 			{
-				$this->Email->to = "george@electricpulp.com";
+				$this->Email->to = "mailman@mrenergy.com";
 			    $this->Email->subject = "[mrenergy.com] Contact Us Form";
 			    $this->Email->from = $this->data['Contact']['name'] . "<" . $this->data['Contact']['email'] . ">";
 			    $this->Email->template = 'contact'; // note no '.ctp'
@@ -151,7 +150,7 @@ class ContentsController extends CmsAppController {
 		}
 		else
 		{
-			$this->set('nav_path', $this->__getPath(0));
+			$this->set('nav_path', $this->__getPath(0, true));
 			$this->data['Content']['parent_id'] = 0;
 		}
 		
@@ -161,7 +160,7 @@ class ContentsController extends CmsAppController {
 		// $this->requireAdmin();
 		
 		// get the nav path
-		$this->set('nav_path', $this->__getPath($id));
+		$this->set('nav_path', $this->__getPath($id, true));
 		
 		if (!$id && empty($this->data)) {
 			$this->Session->setFlash(__('Invalid Content', true), 'agony');
@@ -200,12 +199,7 @@ class ContentsController extends CmsAppController {
 	}
 	
 	function __getPath($id = null, $get_hidden = false) {
-		
-		if ($get_hidden)
-			$hidden = 1;
-		else
-			$hidden = 0;
-		
+
 		$nav_path = $this->Content->getpath($id, array('id','parent_id','title','permalink'));
 
 		if (is_array($nav_path)): foreach ($nav_path as $index => $nav) // Listen, if $nav_path isn't an array, I don't want to hear it. I'll handle that at the end.
@@ -222,7 +216,7 @@ class ContentsController extends CmsAppController {
 				$nav_path[$index]['siblings'] = array_combine($keys, $values);
 			}
 		} endif;
-		
+
 		// check if this element has children and set that up
 		if ($this->Content->childcount($id) > 0 && $id != 0)
 		{
@@ -233,7 +227,11 @@ class ContentsController extends CmsAppController {
 		}
 		else if ($id === 0)
 		{
-			$siblings = $this->Content->find('list', array('fields' => array('Content.id', 'Content.title'), 'conditions' => array('parent_id' => '0', 'hidden' => $hidden)));
+			if ($get_hidden)
+				$conditions = array('parent_id' => '0');
+			else
+				$conditions = array('parent_id' => '0', 'hidden' => 0);
+			$siblings = $this->Content->find('list', array('fields' => array('Content.id', 'Content.title'), 'conditions' => $conditions));
 			$nav_path[] = array('Content' => array('parent_id' => $id), 'siblings' => $siblings);
 		
 		}
