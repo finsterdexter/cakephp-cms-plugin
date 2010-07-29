@@ -206,8 +206,9 @@ class ContentsController extends CmsAppController {
 		{
 			if ($nav['Content']['parent_id'] == '0')
 			{
-				$nav_path[$index]['siblings'] = $this->Content->find('list', array('conditions' => array('parent_id' => 0, 'hidden' => 0), 'fields' => array('Content.id', 'Content.title')));
-			}
+				$conditions = array('parent_id' => 0);
+				if (!$get_hidden) $conditions['hidden'] = 0;
+				$nav_path[$index]['siblings'] = $this->Content->find('list', array('conditions' => $conditions, 'fields' => array('Content.id', 'Content.title')));			}
 			else
 			{
 				$siblings = $this->Content->children($nav['Content']['parent_id'], true, array('Content.id', 'Content.title'));
