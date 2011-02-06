@@ -1,0 +1,1 @@
+<div class="agony"><?php echo $message ?></div>
