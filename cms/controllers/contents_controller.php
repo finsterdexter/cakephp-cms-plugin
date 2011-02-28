@@ -38,8 +38,23 @@ class ContentsController extends CmsAppController {
 		return $this->_getContentFromPath(array($permalink));
 	}
 	
+	function get_permalink_by_id($id = null)
+	{
+		$permalink = $this->Content->field('permalink', array('id' => $id));
+		$this->set('permalink', $permalink);
+		return $permalink;
+	}
+	
+	function id_has_children($id = null)
+	{
+		if ($this->Content->childcount($id))
+			return true;
+		else
+			return false;
+	}
+	
 	function display() {
-		$this->layout = 'default';
+		$this->layout = 'sub';
 		$content = $this->_getContentFromPath(func_get_args());
 		//if (empty($content['Content']['title'])) $content['Content']['title'] = Inflector::humanize($content['Content']['section']);
 		// $this->set('section', $content['Content']['section']);
@@ -48,6 +63,7 @@ class ContentsController extends CmsAppController {
 		$this->set('title_for_view', $content['Content']['title']);
 		$this->set('content', $content['Content']['content']);
 		$this->set('slug', $content['Content']['permalink']);
+		$this->set('id', $content['Content']['id']);
 		
 		if ($content['Content']['parent_id'] == 0)
 		{
@@ -61,6 +77,7 @@ class ContentsController extends CmsAppController {
 			array_unshift($tabs, $parent);
 		}
 		$this->set('tabs', $tabs);
+		$this->set('nav_path', $this->__getPath($content['Content']['id']));
 		
 		// contact form processing
 		if ( isset($this->data['Contact']) )
@@ -125,7 +142,7 @@ class ContentsController extends CmsAppController {
 		if (isset($this->passedArgs['parentid']))
 		{
 			// then generate nav_path for this parent_id, etc.
-			$nav_path = $this->__getPath($this->passedArgs['parentid']);
+			$nav_path = $this->__getPath($this->passedArgs['parentid'], true);
 			$this->set('nav_path', $nav_path);
 			$this->set('nav_id', $this->passedArgs['parentid']);
 			$this->data['Content']['parent_id'] = $this->passedArgs['parentid'];
@@ -133,7 +150,7 @@ class ContentsController extends CmsAppController {
 		}
 		else
 		{
-			$this->set('nav_path', $this->__getPath(0));
+			$this->set('nav_path', $this->__getPath(0, true));
 			$this->data['Content']['parent_id'] = 0;
 		}
 		
@@ -143,7 +160,7 @@ class ContentsController extends CmsAppController {
 		// $this->requireAdmin();
 		
 		// get the nav path
-		$this->set('nav_path', $this->__getPath($id));
+		$this->set('nav_path', $this->__getPath($id, true));
 		
 		if (!$id && empty($this->data)) {
 			$this->Session->setFlash(__('Invalid Content', true), 'agony');
@@ -175,54 +192,23 @@ class ContentsController extends CmsAppController {
 			$this->Session->setFlash(__('Invalid id for Content', true), 'agony');
 			$this->redirect(array('action'=>'index'));
 		}
-		if ($this->Content->del($id)) {
+		if ($this->Content->delete($id)) {
 			$this->Session->setFlash(__('Content deleted', true), 'thrill');
 			$this->redirect(array('action'=>'index'));
 		}
 	}
 	
-	function admin_upload_image()
-	{
-		$this->layout = 'ajax';
-		if (isset($_FILES['image']['tmp_name'])) {
-			// open the file
-			$img = $_FILES['image']['tmp_name'];
-			$himage = fopen ( $img, "r"); // read the temporary file into a buffer
-			$image = fread ( $himage, filesize($img) );
-			fclose($himage);
-			//if image can't be opened, either its not a valid format or even an image:
-			if ($image === FALSE) {
-				echo "{status:'Error Reading Uploaded File.'}";
-				return;
-			}
-			// create a new random numeric name to avoid rewriting other images already on the server...
-			$ran = rand ();
-			$ran2 = $ran.".";
-			// define the uploading dir
-			$path = WWW_ROOT . "uploads/";
-			// join path and name
-			$path = $path . $ran2.'jpg';
-			// copy the image to the server, alert on fail
-			$hout=fopen($path,"w");
-			fwrite($hout,$image);
-			fclose($hout);
-			//you'll need to modify the path here to reflect your own server.
-			$path = "/uploads/" . $ran2.'jpg';
-			echo "{status:'UPLOADED', image_url:'$path'}";
-		} else {
-			echo "{status:'No file was submitted'}";
-		}
-	}
-	
-	function __getPath($id = null) {
-		$nav_path = $this->Content->getpath($id, array('id','parent_id','title'));
+	function __getPath($id = null, $get_hidden = false) {
+
+		$nav_path = $this->Content->getpath($id, array('id','parent_id','title','permalink'));
 
 		if (is_array($nav_path)): foreach ($nav_path as $index => $nav) // Listen, if $nav_path isn't an array, I don't want to hear it. I'll handle that at the end.
 		{
 			if ($nav['Content']['parent_id'] == '0')
 			{
-				$nav_path[$index]['siblings'] = $this->Content->find('list', array('conditions' => array('parent_id' => 0), 'fields' => array('Content.id', 'Content.title')));
-			}
+				$conditions = array('parent_id' => 0);
+				if (!$get_hidden) $conditions['hidden'] = 0;
+				$nav_path[$index]['siblings'] = $this->Content->find('list', array('conditions' => $conditions, 'fields' => array('Content.id', 'Content.title')));			}
 			else
 			{
 				$siblings = $this->Content->children($nav['Content']['parent_id'], true, array('Content.id', 'Content.title'));
@@ -231,7 +217,7 @@ class ContentsController extends CmsAppController {
 				$nav_path[$index]['siblings'] = array_combine($keys, $values);
 			}
 		} endif;
-		
+
 		// check if this element has children and set that up
 		if ($this->Content->childcount($id) > 0 && $id != 0)
 		{
@@ -242,12 +228,21 @@ class ContentsController extends CmsAppController {
 		}
 		else if ($id === 0)
 		{
-			$siblings = $this->Content->find('list', array('fields' => array('Content.id', 'Content.title'), 'conditions' => array('parent_id' => '0')));
+			if ($get_hidden)
+				$conditions = array('parent_id' => '0');
+			else
+				$conditions = array('parent_id' => '0', 'hidden' => 0);
+			$siblings = $this->Content->find('list', array('fields' => array('Content.id', 'Content.title'), 'conditions' => $conditions));
 			$nav_path[] = array('Content' => array('parent_id' => $id), 'siblings' => $siblings);
 		
 		}
 
 		return $nav_path;
+	}
+	
+	function get_path($id = null)
+	{
+		$this->set('nav_path', $this->__getPath($id));
 	}
 	
 }
